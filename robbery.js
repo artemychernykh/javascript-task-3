@@ -14,9 +14,9 @@ exports.isStar = false;
  * @param {String} workingHours.to – Время закрытия, например, "18:00+5"
  * @returns {Object}
  */
- 
 
-function TempDate(strDate){
+
+function TempDate(strDate) {
     var week = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
     var regEx = /(\S+) (\d+):(\d+)\+(\d)/g;
     var regDate = regEx.exec(strDate);
@@ -28,18 +28,18 @@ function TempDate(strDate){
     this.second = 0;
 }
 
-function initGoodIntrv(bankHours){
+function initGoodIntrv(bankHours) {
     var retIntrv = [];
     var days = ['ПН ', 'ВТ ', 'СР '];
-    for (var i in days){
+    for (var i = 0; i < days.length; i ++) {
 
-        var frm = new TempDate(days[i] + bankHours['from']);
-        var to = new TempDate(days[i] + bankHours['to']);
+        var frm = new TempDate(days[i] + bankHours.from);
+        var to = new TempDate(days[i] + bankHours.to);
 
         to = new Date(to.year, to.month, to.day, to.hour, to.minute);
         frm = new Date(frm.year, frm.month, frm.day, frm.hour, frm.minute);
-        retIntrv.push({a: frm, b: to});
-        
+        retIntrv.push({ a: frm, b: to });
+
     }
 
     return retIntrv;
@@ -47,89 +47,116 @@ function initGoodIntrv(bankHours){
 
 function getValidShedule(gangSchedule) {
     var validGangShegule = [];
-    for (var person in gangSchedule) {
-        for (var i = 0; i < gangSchedule[person].length; i++) {
-            
-            var frm = new TempDate(gangSchedule[person][i]['from']);
-            var to = new TempDate(gangSchedule[person][i]['to']);
-            
+    var namesRobers = Object.getOwnPropertyNames(gangSchedule);
+    for (var j = 0; j < namesRobers.length; j++) {
+        for (var i = 0; i < gangSchedule[namesRobers[j]].length; i++) {
+            var frm = new TempDate(gangSchedule[namesRobers[j]][i].from);
+            var to = new TempDate(gangSchedule[namesRobers[j]][i].to);
+
             to = new Date(to.year, to.month, to.day, to.hour, to.minute);
             frm = new Date(frm.year, frm.month, frm.day, frm.hour, frm.minute);
-            validGangShegule.push({a:frm, b: to});
+            validGangShegule.push({ a: frm, b: to });
         }
     }
+
     return validGangShegule;
 }
 
-function delIntrv(fr, to, intervals, i) {
-        if (to < intervals[i].b && fr > intervals[i].a) {
-            
-            intervals.push({a:to, b: intervals[i].b});
-            intervals.splice(i, 1, {a:intervals[i].a, b: fr});
-        }
-        else {
-            if (fr <= intervals[i].a && to >= intervals[i].b) {
-                intervals.splice(i, 1, {a:undefined, b:undefined});
-                return;
-            }
-            var fst;
-            var scn;
-            if (intervals[i].a > fr) {
-                fst = to;
-                scn = intervals[i].b;
-            }
-            else {
-                
-                fst = intervals[i].a;
-                scn = fr;
-            }
-            intervals.splice(i, 1, {a:fst, b:scn});
-            
-        }
-    return intervals;    
-    
-    
+function inInterval(sheduleVal, goodIntrvVal) {
+
+    return (sheduleVal.a < goodIntrvVal.b && sheduleVal.b > goodIntrvVal.a);
 }
 
+function fullInInterval(fr, to, goodIntrvVal) {
+
+    return (to < goodIntrvVal.b && fr > goodIntrvVal.a);
+}
+
+
+function notFullInIntrv(fr, to, intervals, i) {
+    if (fr <= intervals[i].a && to >= intervals[i].b) {
+        intervals.splice(i, 1, { a: undefined, b: undefined });
+
+        return intervals;
+    }
+    var fst;
+    var scn;
+    if (intervals[i].a > fr) {
+        fst = to;
+        scn = intervals[i].b;
+    } else {
+        fst = intervals[i].a;
+        scn = fr;
+    }
+    intervals.splice(i, 1, { a: fst, b: scn });
+
+    return intervals;
+}
+
+function delIntrv(fr, to, intervals, i) {
+    if (!inInterval({ a: fr, b: to }, intervals[i])) {
+        return intervals;
+    }
+    if (fullInInterval(fr, to, intervals[i])) {
+        intervals.push({ a: to, b: intervals[i].b });
+        intervals.splice(i, 1, { a: intervals[i].a, b: fr });
+
+        return intervals;
+    }
+
+    return notFullInIntrv(fr, to, intervals, i);
+}
+
+
+function getGoodtime(goodIntrv, duration) {
+    for (var i = 0; i < goodIntrv.length; i++) {
+        var durIntrv = (goodIntrv[i].b - goodIntrv[i].a) / 60000;
+        if (durIntrv >= duration) {
+            return i;
+        }
+
+    }
+
+    return -1;
+
+}
+
+function addZeros(num) {
+    if (num < 10) {
+        num = '0' + num;
+    }
+
+    return num;
+}
 
 exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     var isExists = false;
     var goodTime;
     var timeZoneBank = Number(workingHours.from[6]);
     var validShedule = getValidShedule(schedule);
-    var numGoodTime = 0;
     var week = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
-   
     var goodIntrv = initGoodIntrv(workingHours);
+
     for (var i = 0; i < validShedule.length; i++) {
         for (var j = 0; j < goodIntrv.length; j++) {
-            if (validShedule[i].a < goodIntrv[j].b && validShedule[i].b > goodIntrv[j].a) {
-                goodIntrv = delIntrv(validShedule[i].a, validShedule[i].b, goodIntrv, j);
-            }
-            
+            goodIntrv = delIntrv(validShedule[i].a, validShedule[i].b, goodIntrv, j);
         }
     }
-    for (var i = 0; i < goodIntrv.length; i++){
-        var durIntrv = (goodIntrv[i].b - goodIntrv[i].a)/60000;
-        if (durIntrv >= duration) {
-            isExists = true;
-            goodTime = goodIntrv[i].a;
-            numGoodTime = i;
-            break;
-            
-        }
-       
-    }   
-    
+    var indGoodTime = getGoodtime(goodIntrv, duration);
+    if (indGoodTime !== -1) {
+        isExists = true;
+        goodTime = goodIntrv[indGoodTime].a;
+    }
+
     return {
+
         /**
          * Найдено ли время
          * @returns {Boolean}
          */
         exists: function () {
-            
+
             return isExists;
-            
         },
 
         /**
@@ -141,12 +168,14 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
          */
         format: function (template) {
             var returnableTemplate;
-            if (!isExists){
+            if (!isExists) {
                 return '';
             }
-            returnableTemplate = template.replace('%HH', (goodTime.getHours() + timeZoneBank))
-                                    .replace('%MM', goodTime.getMinutes())
-                                    .replace('%DD', week[goodTime.getDate() - 1]);
+            returnableTemplate = template.replace('%HH',
+                                                  addZeros((goodTime.getHours() + timeZoneBank)))
+                                .replace('%MM', addZeros(goodTime.getMinutes()))
+                                .replace('%DD', week[goodTime.getDate() - 1]);
+
             return returnableTemplate;
         },
 
@@ -156,7 +185,8 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
          * @returns {Boolean}
          */
         tryLater: function () {
-            return false;
+
+            return isExists;
         }
     };
 };
