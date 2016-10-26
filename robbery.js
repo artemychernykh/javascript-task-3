@@ -122,9 +122,6 @@ function getGoodtime(goodIntrv, duration) {
 }
 
 function addZeros(num) {
-    if (num < 10) {
-        num = '0' + num;
-    }
 
     return num;
 }
