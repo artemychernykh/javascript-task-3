@@ -64,7 +64,7 @@ function getValidShedule(gangSchedule) {
 
 function inInterval(sheduleVal, goodIntrvVal) {
 
-    return (sheduleVal.a < goodIntrvVal.b && sheduleVal.b > goodIntrvVal.a);
+    return (sheduleVal.a <= goodIntrvVal.b && sheduleVal.b >= goodIntrvVal.a);
 }
 
 function fullInInterval(fr, to, goodIntrvVal) {
@@ -122,6 +122,9 @@ function getGoodtime(goodIntrv, duration) {
 }
 
 function addZeros(num) {
+    if (num < 10) {
+        num = '0' + num;
+    }
 
     return num;
 }
