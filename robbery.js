@@ -124,7 +124,7 @@ function getGoodtime(goodIntrv, duration) {
 
 function addZeros(num) {
     if (num < 10) {
-        num = '0' + num;
+        num = '0' + num.toString();
     }
 
     return num;
@@ -148,7 +148,6 @@ function sortIntrv(interval) {
 var week = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
 
 exports.getAppropriateMoment = function (schedule, duration, workingHours) {
-    console.info(schedule, duration, workingHours);
     var isExists = false;
     var goodTime;
     var timeZoneBank = Number(workingHours.from[6]);
@@ -160,11 +159,10 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
         }
     }
     goodIntrv = sortIntrv(goodIntrv);
-
     var indGoodTime = getGoodtime(goodIntrv, duration);
     if (indGoodTime !== -1) {
         isExists = true;
-        goodTime = goodIntrv[indGoodTime].a;
+        goodTime = new Date(Number(goodIntrv[indGoodTime].a) + 60000 * timeZoneBank);
     }
 
     return {
@@ -191,7 +189,7 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
                 return '';
             }
             returnableTemplate = template.replace('%HH',
-                                                  addZeros((goodTime.getHours() + timeZoneBank)))
+                                                  addZeros(goodTime.getHours() + timeZoneBank))
                                 .replace('%MM', addZeros(goodTime.getMinutes()))
                                 .replace('%DD', week[goodTime.getDate() - 1]);
 
