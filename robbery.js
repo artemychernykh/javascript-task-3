@@ -148,6 +148,7 @@ function sortIntrv(interval) {
 var week = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
 
 exports.getAppropriateMoment = function (schedule, duration, workingHours) {
+    console.info(schedule, duration, workingHours);
     var isExists = false;
     var goodTime;
     var timeZoneBank = Number(workingHours.from[6]);
@@ -156,7 +157,6 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     for (var i = 0; i < validShedule.length; i++) {
         for (var j = 0; j < goodIntrv.length; j++) {
             goodIntrv = delIntrv(validShedule[i].a, validShedule[i].b, goodIntrv, j);
-            console.info(goodIntrv);
         }
     }
     goodIntrv = sortIntrv(goodIntrv);
