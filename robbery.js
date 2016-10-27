@@ -75,7 +75,7 @@ function fullInInterval(fr, to, goodIntrvVal) {
 
 function notFullInIntrv(fr, to, intervals, i) {
     if (fr <= intervals[i].a && to >= intervals[i].b) {
-        intervals.splice(i, 1, { a: intervals[i].a, b: intervals[i].b });
+        intervals.splice(i, 1, { a: intervals[i].a, b: intervals[i].a });
 
         return intervals;
     }
@@ -153,13 +153,14 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     var timeZoneBank = Number(workingHours.from[6]);
     var validShedule = getValidShedule(schedule);
     var goodIntrv = initGoodIntrv(workingHours);
-    goodIntrv = sortIntrv(goodIntrv);
     for (var i = 0; i < validShedule.length; i++) {
         for (var j = 0; j < goodIntrv.length; j++) {
             goodIntrv = delIntrv(validShedule[i].a, validShedule[i].b, goodIntrv, j);
+            console.info(goodIntrv);
         }
     }
-    console.info(goodIntrv);
+    goodIntrv = sortIntrv(goodIntrv);
+
     var indGoodTime = getGoodtime(goodIntrv, duration);
     if (indGoodTime !== -1) {
         isExists = true;
