@@ -162,7 +162,7 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     var indGoodTime = getGoodtime(goodIntrv, duration);
     if (indGoodTime !== -1) {
         isExists = true;
-        goodTime = new Date(Number(goodIntrv[indGoodTime].a) + 60000 * timeZoneBank);
+        goodTime = new Date(Number(goodIntrv[indGoodTime].a) + 3600000 * timeZoneBank);
     }
 
     return {
@@ -189,7 +189,7 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
                 return '';
             }
             returnableTemplate = template.replace('%HH',
-                                                  addZeros(goodTime.getHours() + timeZoneBank))
+                                                  addZeros(goodTime.getHours()))
                                 .replace('%MM', addZeros(goodTime.getMinutes()))
                                 .replace('%DD', week[goodTime.getDate() - 1]);
 
