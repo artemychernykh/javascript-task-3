@@ -75,7 +75,7 @@ function fullInInterval(fr, to, goodIntrvVal) {
 
 function notFullInIntrv(fr, to, intervals, i) {
     if (fr <= intervals[i].a && to >= intervals[i].b) {
-        intervals.splice(i, 1, { a: undefined, b: undefined });
+        intervals.splice(i, 1, { a: intervals[i].a, b: intervals[i].b });
 
         return intervals;
     }
@@ -121,6 +121,7 @@ function getGoodtime(goodIntrv, duration) {
 
 }
 
+
 function addZeros(num) {
     if (num < 10) {
         num = '0' + num;
@@ -129,18 +130,36 @@ function addZeros(num) {
     return num;
 }
 
+function sortOnA(elema, elemb) {
+    if (elema.a > elemb.a) {
+        return 1;
+    }
+    if (elema.a < elemb.a) {
+        return -1;
+    }
+
+    return 0;
+}
+
+function sortIntrv(interval) {
+
+    return interval.sort(sortOnA);
+}
+var week = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+
 exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     var isExists = false;
     var goodTime;
     var timeZoneBank = Number(workingHours.from[6]);
     var validShedule = getValidShedule(schedule);
-    var week = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
     var goodIntrv = initGoodIntrv(workingHours);
+    goodIntrv = sortIntrv(goodIntrv);
     for (var i = 0; i < validShedule.length; i++) {
         for (var j = 0; j < goodIntrv.length; j++) {
             goodIntrv = delIntrv(validShedule[i].a, validShedule[i].b, goodIntrv, j);
         }
     }
+    console.info(goodIntrv);
     var indGoodTime = getGoodtime(goodIntrv, duration);
     if (indGoodTime !== -1) {
         isExists = true;
