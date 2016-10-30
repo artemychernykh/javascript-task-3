@@ -15,96 +15,89 @@ exports.isStar = false;
  * @returns {Object}
  */
 
+var WEEK = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+var THREE_DAYS = ['ПН ', 'ВТ ', 'СР '];
 
-function TempDate(strDate) {
-    var week = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+
+function toDate(strDate) {
     var regEx = /(\S+) (\d+):(\d+)\+(\d)/g;
     var regDate = regEx.exec(strDate);
-    this.year = 1970;
-    this.month = 0;
-    this.day = week.indexOf(regDate[1]) + 1;
-    this.hour = Number(regDate[2]) - Number(regDate[4]);
-    this.minute = Number(regDate[3]);
-    this.second = 0;
+
+    return new Date(1970, 0, (WEEK.indexOf(regDate[1]) + 1),
+                    (Number(regDate[2]) - Number(regDate[4])), Number(regDate[3]));
+
 }
+
 
 function initGoodIntrv(bankHours) {
     var retIntrv = [];
-    var days = ['ПН ', 'ВТ ', 'СР '];
-    for (var i = 0; i < days.length; i ++) {
+    for (var i = 0; i < THREE_DAYS.length; i ++) {
 
-        var frm = new TempDate(days[i] + bankHours.from);
-        var to = new TempDate(days[i] + bankHours.to);
-
-        to = new Date(to.year, to.month, to.day, to.hour, to.minute);
-        frm = new Date(frm.year, frm.month, frm.day, frm.hour, frm.minute);
-        retIntrv.push({ a: frm, b: to });
+        var from = toDate(THREE_DAYS[i] + bankHours.from);
+        var to = toDate(THREE_DAYS[i] + bankHours.to);
+        retIntrv.push({ a: from, b: to });
 
     }
 
     return retIntrv;
 }
 
-function getValidShedule(gangSchedule) {
-    var validGangShegule = [];
-    var namesRobers = Object.getOwnPropertyNames(gangSchedule);
-    for (var j = 0; j < namesRobers.length; j++) {
-        for (var i = 0; i < gangSchedule[namesRobers[j]].length; i++) {
-            var frm = new TempDate(gangSchedule[namesRobers[j]][i].from);
-            var to = new TempDate(gangSchedule[namesRobers[j]][i].to);
 
-            to = new Date(to.year, to.month, to.day, to.hour, to.minute);
-            frm = new Date(frm.year, frm.month, frm.day, frm.hour, frm.minute);
-            validGangShegule.push({ a: frm, b: to });
-        }
-    }
+function getFormatSchedule(gangSchedule) {
+    var formatGangSchegule = [];
+    var namesRobbers = Object.keys(gangSchedule);
+    namesRobbers.forEach(function (name) {
+        gangSchedule[name].forEach(function (busyTime) {
+            var from = toDate(busyTime.from);
+            var to = toDate(busyTime.to);
+            formatGangSchegule.push({ a: from, b: to });
+        });
+    });
 
-    return validGangShegule;
+    return formatGangSchegule;
 }
 
-function inInterval(sheduleVal, goodIntrvVal) {
-
+function isInInterval(sheduleVal, goodIntrvVal) {
     return (sheduleVal.a <= goodIntrvVal.b && sheduleVal.b >= goodIntrvVal.a);
 }
 
-function fullInInterval(fr, to, goodIntrvVal) {
-
-    return (to < goodIntrvVal.b && fr > goodIntrvVal.a);
+function isFullInInterval(from, to, goodIntrvVal) {
+    return (to < goodIntrvVal.b && from > goodIntrvVal.a);
 }
 
 
-function notFullInIntrv(fr, to, intervals, i) {
-    if (fr <= intervals[i].a && to >= intervals[i].b) {
+function notFullInIntrv(from, to, intervals, i) {
+    if (from <= intervals[i].a && to >= intervals[i].b) {
         intervals.splice(i, 1, { a: intervals[i].a, b: intervals[i].a });
 
         return intervals;
     }
     var fst;
     var scn;
-    if (intervals[i].a >= fr) {
+    if (intervals[i].a >= from) {
         fst = to;
         scn = intervals[i].b;
     } else {
         fst = intervals[i].a;
-        scn = fr;
+        scn = from;
     }
     intervals.splice(i, 1, { a: fst, b: scn });
 
     return intervals;
 }
 
-function delIntrv(fr, to, intervals, i) {
-    if (!inInterval({ a: fr, b: to }, intervals[i])) {
+function delIntrv(from, to, intervals, i) {
+    if (!isInInterval({ a: from, b: to }, intervals[i])) {
         return intervals;
     }
-    if (fullInInterval(fr, to, intervals[i])) {
+    if (isFullInInterval(from, to, intervals[i])) {
         intervals.push({ a: to, b: intervals[i].b });
-        intervals.splice(i, 1, { a: intervals[i].a, b: fr });
+        intervals.splice(i, 1, { a: intervals[i].a, b: from });
 
         return intervals;
     }
 
-    return notFullInIntrv(fr, to, intervals, i);
+    return notFullInIntrv(from, to, intervals, i);
 }
 
 
@@ -127,7 +120,7 @@ function addZeros(num) {
         num = '0' + num.toString();
     }
 
-    return num;
+    return String(num);
 }
 
 function sortOnA(elema, elemb) {
@@ -145,17 +138,17 @@ function sortIntrv(interval) {
 
     return interval.sort(sortOnA);
 }
-var week = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
 
 exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     var isExists = false;
     var goodTime;
     var timeZoneBank = Number(workingHours.from[6]);
-    var validShedule = getValidShedule(schedule);
+    var formatSchedule = getFormatSchedule(schedule);
     var goodIntrv = initGoodIntrv(workingHours);
-    for (var i = 0; i < validShedule.length; i++) {
+
+    for (var i = 0; i < formatSchedule.length; i++) {
         for (var j = 0; j < goodIntrv.length; j++) {
-            goodIntrv = delIntrv(validShedule[i].a, validShedule[i].b, goodIntrv, j);
+            goodIntrv = delIntrv(formatSchedule[i].a, formatSchedule[i].b, goodIntrv, j);
         }
     }
     goodIntrv = sortIntrv(goodIntrv);
@@ -184,16 +177,14 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
          * @returns {String}
          */
         format: function (template) {
-            var returnableTemplate;
             if (!isExists) {
                 return '';
             }
-            returnableTemplate = template.replace('%HH',
-                                                  addZeros(goodTime.getHours()))
-                                .replace('%MM', addZeros(goodTime.getMinutes()))
-                                .replace('%DD', week[goodTime.getDate() - 1]);
 
-            return returnableTemplate;
+            return template.replace('%HH',
+                                   addZeros(goodTime.getHours()))
+                                .replace('%MM', addZeros(goodTime.getMinutes()))
+                                .replace('%DD', WEEK[goodTime.getDate() - 1]);
         },
 
         /**
