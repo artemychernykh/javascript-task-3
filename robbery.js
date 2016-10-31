@@ -131,8 +131,6 @@ function sortIntrv(interval) {
 }
 
 exports.getAppropriateMoment = function (schedule, duration, workingHours) {
-    var isExists = false;
-    var goodTime;
     var timeZoneBank = Number(workingHours.from[6]);
     var formatSchedule = getFormattedSchedule(schedule);
     var goodInterval = initGoodInterval(workingHours);
@@ -145,6 +143,8 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     }
     goodInterval = sortIntrv(goodInterval);
     var indGoodTime = getGoodTimeIndex(goodInterval, duration);
+    var isExists = false;
+    var goodTime;
     if (indGoodTime !== -1) {
         isExists = true;
         goodTime = new Date(Number(goodInterval[indGoodTime].from) + MS_IN_HOUR * timeZoneBank);
@@ -185,7 +185,6 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
          * @returns {Boolean}
          */
         tryLater: function () {
-
             return isExists;
         }
     };
