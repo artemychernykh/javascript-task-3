@@ -32,10 +32,10 @@ function initGoodInterval(bankHours) {
 
         var from = parseDate(DAYS_ROBBERY[i] + bankHours.from);
         var to = parseDate(DAYS_ROBBERY[i] + bankHours.to);
-        retIntrv.push({ a: from, b: to });
+        retIntrv.push({ from: from, to: to });
 
     }
-    
+
     return retIntrv;
 }
 
@@ -46,7 +46,7 @@ function getFormattedSchedule(gangSchedule) {
         gangSchedule[name].forEach(function (busyTime) {
             var from = parseDate(busyTime.from);
             var to = parseDate(busyTime.to);
-            formatGangSchegule.push({ a: from, b: to });
+            formatGangSchegule.push({ from: from, to: to });
         });
     });
 
@@ -54,40 +54,40 @@ function getFormattedSchedule(gangSchedule) {
 }
 
 function isInInterval(sheduleVal, goodIntrvVal) {
-    return (sheduleVal.a <= goodIntrvVal.b && sheduleVal.b >= goodIntrvVal.a);
+    return (sheduleVal.from <= goodIntrvVal.to && sheduleVal.to >= goodIntrvVal.from);
 }
 
 function isFullInInterval(from, to, goodIntrvVal) {
-    return (to < goodIntrvVal.b && from > goodIntrvVal.a);
+    return (to < goodIntrvVal.to && from > goodIntrvVal.from);
 }
 
 function notFullInIntrv(from, to, intervals, i) {
-    if (from <= intervals[i].a && to >= intervals[i].b) {
-        intervals.splice(i, 1, { a: intervals[i].a, b: intervals[i].a });
+    if (from <= intervals[i].from && to >= intervals[i].to) {
+        intervals.splice(i, 1, { from: intervals[i].from, to: intervals[i].to });
 
         return intervals;
     }
     var fst;
     var scn;
-    if (intervals[i].a >= from) {
+    if (intervals[i].from >= from) {
         fst = to;
-        scn = intervals[i].b;
+        scn = intervals[i].to;
     } else {
-        fst = intervals[i].a;
+        fst = intervals[i].from;
         scn = from;
     }
-    intervals.splice(i, 1, { a: fst, b: scn });
+    intervals.splice(i, 1, { from: fst, to: scn });
 
     return intervals;
 }
 
 function delIntrv(from, to, intervals, i) {
-    if (!isInInterval({ a: from, b: to }, intervals[i])) {
+    if (!isInInterval({ from: from, to: to }, intervals[i])) {
         return intervals;
     }
     if (isFullInInterval(from, to, intervals[i])) {
-        intervals.push({ a: to, b: intervals[i].b });
-        intervals.splice(i, 1, { a: intervals[i].a, b: from });
+        intervals.push({ from: to, to: intervals[i].to });
+        intervals.splice(i, 1, { from: intervals[i].from, to: from });
 
         return intervals;
     }
@@ -97,7 +97,7 @@ function delIntrv(from, to, intervals, i) {
 
 function getGoodTimeIndex(goodInterval, duration) {
     for (var i = 0; i < goodInterval.length; i++) {
-        var durIntrv = (goodInterval[i].b - goodInterval[i].a) / 60000;
+        var durIntrv = (goodInterval[i].to - goodInterval[i].from) / 60000;
         if (durIntrv >= duration) {
             return i;
         }
@@ -114,11 +114,11 @@ function addZeros(num) {
     return String(num);
 }
 
-function sortOnA(elema, elemb) {
-    if (elema.a > elemb.a) {
+function sortOnA(a, b) {
+    if (a.from > b.to) {
         return 1;
     }
-    if (elema.a < elemb.a) {
+    if (a.from < b.to) {
         return -1;
     }
 
@@ -139,14 +139,15 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
 
     for (var i = 0; i < formatSchedule.length; i++) {
         for (var j = 0; j < goodInterval.length; j++) {
-            goodInterval = delIntrv(formatSchedule[i].a, formatSchedule[i].b, goodInterval, j);
+            goodInterval = delIntrv(formatSchedule[i].from, formatSchedule[i].to,
+                                    goodInterval, j);
         }
     }
     goodInterval = sortIntrv(goodInterval);
     var indGoodTime = getGoodTimeIndex(goodInterval, duration);
     if (indGoodTime !== -1) {
         isExists = true;
-        goodTime = new Date(Number(goodInterval[indGoodTime].a) + MS_IN_HOUR * timeZoneBank);
+        goodTime = new Date(Number(goodInterval[indGoodTime].from) + MS_IN_HOUR * timeZoneBank);
     }
 
     return {
