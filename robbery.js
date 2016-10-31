@@ -18,6 +18,8 @@ exports.isStar = false;
 var WEEK = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
 var DAYS_ROBBERY = ['ПН ', 'ВТ ', 'СР '];
 var MS_IN_HOUR = 3600000;
+MS_IN_MINUTE = 60000;
+
 function parseDate(strDate) {
     var regEx = /(\S+) (\d+):(\d+)\+(\d+)/g;
     var regDate = regEx.exec(strDate);
@@ -97,7 +99,7 @@ function delIntrv(from, to, intervals, i) {
 
 function getGoodTimeIndex(goodInterval, duration) {
     for (var i = 0; i < goodInterval.length; i++) {
-        var durIntrv = (goodInterval[i].to - goodInterval[i].from) / 60000;
+        var durIntrv = (goodInterval[i].to - goodInterval[i].from) / MS_IN_MINUTE;
         if (durIntrv >= duration) {
             return i;
         }
