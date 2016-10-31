@@ -29,14 +29,14 @@ function parseDate(strDate) {
 }
 
 function initGoodInterval(bankHours) {
-    var retIntrv = [];
+    var returnableInterval = [];
     for (var i = 0; i < DAYS_ROBBERY.length; i ++) {
         var from = parseDate(DAYS_ROBBERY[i] + bankHours.from);
         var to = parseDate(DAYS_ROBBERY[i] + bankHours.to);
-        retIntrv.push({ from: from, to: to });
+        returnableInterval.push({ from: from, to: to });
     }
 
-    return retIntrv;
+    return returnableInterval;
 }
 
 function getFormattedSchedule(gangSchedule) {
@@ -67,21 +67,21 @@ function notFullInInterval(from, to, intervals, i) {
 
         return intervals;
     }
-    var first;
-    var second;
+    var startTime;
+    var endTime;
     if (intervals[i].from >= from) {
-        first = to;
-        second = intervals[i].to;
+        startTime = to;
+        endTime = intervals[i].to;
     } else {
-        first = intervals[i].from;
-        second = from;
+        startTime = intervals[i].from;
+        endTime = from;
     }
-    intervals.splice(i, 1, { from: first, to: second });
+    intervals.splice(i, 1, { from: startTime, to: endTime });
 
     return intervals;
 }
 
-function delInterval(from, to, intervals, i) {
+function changeInterval(from, to, intervals, i) {
     if (!isInInterval({ from: from, to: to }, intervals[i])) {
         return intervals;
     }
@@ -137,8 +137,8 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
 
     for (var i = 0; i < formatSchedule.length; i++) {
         for (var j = 0; j < goodInterval.length; j++) {
-            goodInterval = delInterval(formatSchedule[i].from, formatSchedule[i].to,
-                                    goodInterval, j);
+            goodInterval = changeInterval(formatSchedule[i].from, formatSchedule[i].to,
+                                       goodInterval, j);
         }
     }
     goodInterval = sortInterval(goodInterval);
