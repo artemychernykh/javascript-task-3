@@ -18,7 +18,7 @@ exports.isStar = false;
 var WEEK = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
 var DAYS_ROBBERY = ['ПН ', 'ВТ ', 'СР '];
 var MS_IN_HOUR = 3600000;
-MS_IN_MINUTE = 60000;
+var MS_IN_MINUTE = 60000;
 
 function parseDate(strDate) {
     var regEx = /(\S+) (\d+):(\d+)\+(\d+)/g;
@@ -133,7 +133,7 @@ function sortIntrv(interval) {
 }
 
 exports.getAppropriateMoment = function (schedule, duration, workingHours) {
-    var timeZoneBank = Number(workingHours.from[6]);
+    var timeZoneBank = Number(workingHours.from.substr(6));
     var formatSchedule = getFormattedSchedule(schedule);
     var goodInterval = initGoodInterval(workingHours);
 
