@@ -31,28 +31,26 @@ function parseDate(strDate) {
 function initGoodInterval(bankHours) {
     var retIntrv = [];
     for (var i = 0; i < DAYS_ROBBERY.length; i ++) {
-
         var from = parseDate(DAYS_ROBBERY[i] + bankHours.from);
         var to = parseDate(DAYS_ROBBERY[i] + bankHours.to);
         retIntrv.push({ from: from, to: to });
-
     }
 
     return retIntrv;
 }
 
 function getFormattedSchedule(gangSchedule) {
-    var formatGangSchegule = [];
+    var formatGangSchedule = [];
     var namesRobbers = Object.keys(gangSchedule);
     namesRobbers.forEach(function (name) {
         gangSchedule[name].forEach(function (busyTime) {
             var from = parseDate(busyTime.from);
             var to = parseDate(busyTime.to);
-            formatGangSchegule.push({ from: from, to: to });
+            formatGangSchedule.push({ from: from, to: to });
         });
     });
 
-    return formatGangSchegule;
+    return formatGangSchedule;
 }
 
 function isInInterval(sheduleVal, goodIntrvVal) {
@@ -63,27 +61,27 @@ function isFullInInterval(from, to, goodIntrvVal) {
     return (to < goodIntrvVal.to && from > goodIntrvVal.from);
 }
 
-function notFullInIntrv(from, to, intervals, i) {
+function notFullInInterval(from, to, intervals, i) {
     if (from <= intervals[i].from && to >= intervals[i].to) {
         intervals.splice(i, 1, { from: intervals[i].from, to: intervals[i].to });
 
         return intervals;
     }
-    var fst;
-    var scn;
+    var first;
+    var second;
     if (intervals[i].from >= from) {
-        fst = to;
-        scn = intervals[i].to;
+        first = to;
+        second = intervals[i].to;
     } else {
-        fst = intervals[i].from;
-        scn = from;
+        first = intervals[i].from;
+        second = from;
     }
-    intervals.splice(i, 1, { from: fst, to: scn });
+    intervals.splice(i, 1, { from: first, to: second });
 
     return intervals;
 }
 
-function delIntrv(from, to, intervals, i) {
+function delInterval(from, to, intervals, i) {
     if (!isInInterval({ from: from, to: to }, intervals[i])) {
         return intervals;
     }
@@ -94,7 +92,7 @@ function delIntrv(from, to, intervals, i) {
         return intervals;
     }
 
-    return notFullInIntrv(from, to, intervals, i);
+    return notFullInInterval(from, to, intervals, i);
 }
 
 function getGoodTimeIndex(goodInterval, duration) {
@@ -127,7 +125,7 @@ function sortOnA(a, b) {
     return 0;
 }
 
-function sortIntrv(interval) {
+function sortInterval(interval) {
 
     return interval.sort(sortOnA);
 }
@@ -139,11 +137,11 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
 
     for (var i = 0; i < formatSchedule.length; i++) {
         for (var j = 0; j < goodInterval.length; j++) {
-            goodInterval = delIntrv(formatSchedule[i].from, formatSchedule[i].to,
+            goodInterval = delInterval(formatSchedule[i].from, formatSchedule[i].to,
                                     goodInterval, j);
         }
     }
-    goodInterval = sortIntrv(goodInterval);
+    goodInterval = sortInterval(goodInterval);
     var indGoodTime = getGoodTimeIndex(goodInterval, duration);
     var isExists = false;
     var goodTime;
@@ -159,7 +157,6 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
          * @returns {Boolean}
          */
         exists: function () {
-
             return isExists;
         },
 
@@ -175,10 +172,10 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
                 return '';
             }
 
-            return template.replace('%HH',
-                                   addZeros(goodTime.getHours()))
-                                .replace('%MM', addZeros(goodTime.getMinutes()))
-                                .replace('%DD', WEEK[goodTime.getDate() - 1]);
+            return template
+                    .replace('%HH', addZeros(goodTime.getHours()))
+                    .replace('%MM', addZeros(goodTime.getMinutes()))
+                    .replace('%DD', WEEK[goodTime.getDate() - 1]);
         },
 
         /**
