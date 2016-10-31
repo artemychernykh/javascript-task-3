@@ -16,40 +16,36 @@ exports.isStar = false;
  */
 
 var WEEK = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
-var THREE_DAYS = ['ПН ', 'ВТ ', 'СР '];
-
-
-function toDate(strDate) {
-    var regEx = /(\S+) (\d+):(\d+)\+(\d)/g;
+var DAYS_ROBBERY = ['ПН ', 'ВТ ', 'СР '];
+var MS_IN_HOUR = 3600000;
+function parseDate(strDate) {
+    var regEx = /(\S+) (\d+):(\d+)\+(\d+)/g;
     var regDate = regEx.exec(strDate);
 
     return new Date(1970, 0, (WEEK.indexOf(regDate[1]) + 1),
                     (Number(regDate[2]) - Number(regDate[4])), Number(regDate[3]));
-
 }
 
-
-function initGoodIntrv(bankHours) {
+function initGoodInterval(bankHours) {
     var retIntrv = [];
-    for (var i = 0; i < THREE_DAYS.length; i ++) {
+    for (var i = 0; i < DAYS_ROBBERY.length; i ++) {
 
-        var from = toDate(THREE_DAYS[i] + bankHours.from);
-        var to = toDate(THREE_DAYS[i] + bankHours.to);
+        var from = parseDate(DAYS_ROBBERY[i] + bankHours.from);
+        var to = parseDate(DAYS_ROBBERY[i] + bankHours.to);
         retIntrv.push({ a: from, b: to });
 
     }
-
+    
     return retIntrv;
 }
 
-
-function getFormatSchedule(gangSchedule) {
+function getFormattedSchedule(gangSchedule) {
     var formatGangSchegule = [];
     var namesRobbers = Object.keys(gangSchedule);
     namesRobbers.forEach(function (name) {
         gangSchedule[name].forEach(function (busyTime) {
-            var from = toDate(busyTime.from);
-            var to = toDate(busyTime.to);
+            var from = parseDate(busyTime.from);
+            var to = parseDate(busyTime.to);
             formatGangSchegule.push({ a: from, b: to });
         });
     });
@@ -64,7 +60,6 @@ function isInInterval(sheduleVal, goodIntrvVal) {
 function isFullInInterval(from, to, goodIntrvVal) {
     return (to < goodIntrvVal.b && from > goodIntrvVal.a);
 }
-
 
 function notFullInIntrv(from, to, intervals, i) {
     if (from <= intervals[i].a && to >= intervals[i].b) {
@@ -100,24 +95,20 @@ function delIntrv(from, to, intervals, i) {
     return notFullInIntrv(from, to, intervals, i);
 }
 
-
-function getGoodtime(goodIntrv, duration) {
-    for (var i = 0; i < goodIntrv.length; i++) {
-        var durIntrv = (goodIntrv[i].b - goodIntrv[i].a) / 60000;
+function getGoodTimeIndex(goodInterval, duration) {
+    for (var i = 0; i < goodInterval.length; i++) {
+        var durIntrv = (goodInterval[i].b - goodInterval[i].a) / 60000;
         if (durIntrv >= duration) {
             return i;
         }
-
     }
 
     return -1;
-
 }
-
 
 function addZeros(num) {
     if (num < 10) {
-        num = '0' + num.toString();
+        num = '0' + num;
     }
 
     return String(num);
@@ -143,19 +134,19 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     var isExists = false;
     var goodTime;
     var timeZoneBank = Number(workingHours.from[6]);
-    var formatSchedule = getFormatSchedule(schedule);
-    var goodIntrv = initGoodIntrv(workingHours);
+    var formatSchedule = getFormattedSchedule(schedule);
+    var goodInterval = initGoodInterval(workingHours);
 
     for (var i = 0; i < formatSchedule.length; i++) {
-        for (var j = 0; j < goodIntrv.length; j++) {
-            goodIntrv = delIntrv(formatSchedule[i].a, formatSchedule[i].b, goodIntrv, j);
+        for (var j = 0; j < goodInterval.length; j++) {
+            goodInterval = delIntrv(formatSchedule[i].a, formatSchedule[i].b, goodInterval, j);
         }
     }
-    goodIntrv = sortIntrv(goodIntrv);
-    var indGoodTime = getGoodtime(goodIntrv, duration);
+    goodInterval = sortIntrv(goodInterval);
+    var indGoodTime = getGoodTimeIndex(goodInterval, duration);
     if (indGoodTime !== -1) {
         isExists = true;
-        goodTime = new Date(Number(goodIntrv[indGoodTime].a) + 3600000 * timeZoneBank);
+        goodTime = new Date(Number(goodInterval[indGoodTime].a) + MS_IN_HOUR * timeZoneBank);
     }
 
     return {
