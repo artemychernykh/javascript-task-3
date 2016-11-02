@@ -114,25 +114,14 @@ function addZeros(num) {
     return String(num);
 }
 
-function sortOnA(a, b) {
-    if (a.from > b.to) {
-        return 1;
-    }
-    if (a.from < b.to) {
-        return -1;
-    }
-
-    return 0;
-}
-
-function makeInterval(goodInterval, formatSchedule){
+function makeInterval(goodInterval, formatSchedule) {
     for (var i = 0; i < formatSchedule.length; i++) {
         for (var j = 0; j < goodInterval.length; j++) {
             goodInterval = changeInterval(formatSchedule[i].from, formatSchedule[i].to,
                                        goodInterval, j);
         }
     }
-    
+
     return goodInterval;
 }
 
