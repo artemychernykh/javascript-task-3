@@ -114,6 +114,17 @@ function addZeros(num) {
     return String(num);
 }
 
+function sortOnA(a, b) {
+    if (a.from > b.to) {
+        return 1;
+    }
+    if (a.from < b.to) {
+        return -1;
+    }
+
+    return 0;
+}
+
 function makeInterval(goodInterval, formatSchedule) {
     for (var i = 0; i < formatSchedule.length; i++) {
         for (var j = 0; j < goodInterval.length; j++) {
@@ -130,7 +141,7 @@ exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     var formatSchedule = getFormattedSchedule(schedule);
     var goodInterval = initGoodInterval(workingHours);
     goodInterval = makeInterval(goodInterval, formatSchedule);
-    goodInterval.sort();
+    goodInterval.sort(sortOnA);
     var indGoodTime = getGoodTimeIndex(goodInterval, duration);
     var isExists = false;
     var goodTime;
