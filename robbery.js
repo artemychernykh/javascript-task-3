@@ -57,42 +57,42 @@ function isInInterval(sheduleVal, goodIntrvVal) {
     return (sheduleVal.from <= goodIntrvVal.to && sheduleVal.to >= goodIntrvVal.from);
 }
 
-function isFullInInterval(from, to, goodIntrvVal) {
-    return (to < goodIntrvVal.to && from > goodIntrvVal.from);
+function isFullInInterval(sheduleValue, goodIntrvVal) {
+    return (sheduleValue.to < goodIntrvVal.to && sheduleValue.from > goodIntrvVal.from);
 }
 
-function notFullInInterval(from, to, intervals, i) {
-    if (from <= intervals[i].from && to >= intervals[i].to) {
+function notFullInInterval(sheduleValue, intervals, i) {
+    if (sheduleValue.from <= intervals[i].from && sheduleValue.to >= intervals[i].to) {
         intervals.splice(i, 1, { from: intervals[i].from, to: intervals[i].to });
 
         return intervals;
     }
     var startTime;
     var endTime;
-    if (intervals[i].from >= from) {
-        startTime = to;
+    if (intervals[i].from >= sheduleValue.from) {
+        startTime = sheduleValue.to;
         endTime = intervals[i].to;
     } else {
         startTime = intervals[i].from;
-        endTime = from;
+        endTime = sheduleValue.from;
     }
     intervals.splice(i, 1, { from: startTime, to: endTime });
 
     return intervals;
 }
 
-function changeInterval(from, to, intervals, i) {
-    if (!isInInterval({ from: from, to: to }, intervals[i])) {
+function changeInterval(sheduleValue, intervals, i) {
+    if (!isInInterval(sheduleValue, intervals[i])) {
         return intervals;
     }
-    if (isFullInInterval(from, to, intervals[i])) {
-        intervals.push({ from: to, to: intervals[i].to });
-        intervals.splice(i, 1, { from: intervals[i].from, to: from });
+    if (isFullInInterval(sheduleValue, intervals[i])) {
+        intervals.push({ from: sheduleValue.to, to: intervals[i].to });
+        intervals.splice(i, 1, { from: intervals[i].from, to: sheduleValue.from });
 
         return intervals;
     }
 
-    return notFullInInterval(from, to, intervals, i);
+    return notFullInInterval(sheduleValue, intervals, i);
 }
 
 function getGoodTimeIndex(goodInterval, duration) {
@@ -128,7 +128,7 @@ function sortOnA(a, b) {
 function makeInterval(goodInterval, formatSchedule) {
     for (var i = 0; i < formatSchedule.length; i++) {
         for (var j = 0; j < goodInterval.length; j++) {
-            goodInterval = changeInterval(formatSchedule[i].from, formatSchedule[i].to,
+            goodInterval = changeInterval(formatSchedule[i],
                                        goodInterval, j);
         }
     }
