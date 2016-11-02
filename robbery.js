@@ -61,38 +61,38 @@ function isFullInInterval(from, to, goodIntrvVal) {
     return (to < goodIntrvVal.to && from > goodIntrvVal.from);
 }
 
-function notFullInInterval(sheduleValue, intervals, i) {
-    if (sheduleValue.from <= intervals[i].from && sheduleValue.to >= intervals[i].to) {
+function notFullInInterval(from, to, intervals, i) {
+    if (from <= intervals[i].from && to >= intervals[i].to) {
         intervals.splice(i, 1, { from: intervals[i].from, to: intervals[i].to });
 
         return intervals;
     }
     var startTime;
     var endTime;
-    if (intervals[i].from >= sheduleValue.from) {
-        startTime = sheduleValue.to;
+    if (intervals[i].from >= from) {
+        startTime = to;
         endTime = intervals[i].to;
     } else {
         startTime = intervals[i].from;
-        endTime = sheduleValue.from;
+        endTime = from;
     }
     intervals.splice(i, 1, { from: startTime, to: endTime });
 
     return intervals;
 }
 
-function changeInterval(sheduleValue, intervals, i) {
-    if (!isInInterval({ from: sheduleValue.from, to: sheduleValue.to }, intervals[i])) {
+function changeInterval(from, to, intervals, i) {
+    if (!isInInterval({ from: from, to: to }, intervals[i])) {
         return intervals;
     }
-    if (isFullInInterval(sheduleValue.from, sheduleValue.to, intervals[i])) {
-        intervals.push({ from: sheduleValue.to, to: intervals[i].to });
-        intervals.splice(i, 1, { from: intervals[i].from, to: sheduleValue.from });
+    if (isFullInInterval(from, to, intervals[i])) {
+        intervals.push({ from: to, to: intervals[i].to });
+        intervals.splice(i, 1, { from: intervals[i].from, to: from });
 
         return intervals;
     }
 
-    return notFullInInterval(sheduleValue, intervals, i);
+    return notFullInInterval(from, to, intervals, i);
 }
 
 function getGoodTimeIndex(goodInterval, duration) {
@@ -114,14 +114,25 @@ function addZeros(num) {
     return String(num);
 }
 
-function makeInterval(goodInterval, formatSchedule) {
+function sortOnA(a, b) {
+    if (a.from > b.to) {
+        return 1;
+    }
+    if (a.from < b.to) {
+        return -1;
+    }
+
+    return 0;
+}
+
+function makeInterval(goodInterval, formatSchedule){
     for (var i = 0; i < formatSchedule.length; i++) {
         for (var j = 0; j < goodInterval.length; j++) {
-            goodInterval = changeInterval(formatSchedule[i],
+            goodInterval = changeInterval(formatSchedule[i].from, formatSchedule[i].to,
                                        goodInterval, j);
         }
     }
-
+    
     return goodInterval;
 }
 
