@@ -109,7 +109,7 @@ function addZeros(num) {
 }
 
 function sortOnFrom(a, b) {
-    return a.from - a.from;
+    return a.from - b.from;
 }
 
 function makeInterval(appropriateIntervals, formatSchedule) {
