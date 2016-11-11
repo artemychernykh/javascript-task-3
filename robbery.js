@@ -28,7 +28,7 @@ function parseDate(strDate) {
                     (Number(regDate[2]) - Number(regDate[4])), Number(regDate[3]));
 }
 
-function initappropriateIntervals(bankHours) {
+function initAppropriateIntervals(bankHours) {
     var returnableInterval = [];
     for (var i = 0; i < DAYS_ROBBERY.length; i ++) {
         var from = parseDate(DAYS_ROBBERY[i] + bankHours.from);
@@ -108,10 +108,6 @@ function addZeros(num) {
     return num < 10 ? String('0' + num) : String(num);
 }
 
-function sortOnFrom(a, b) {
-    return a.from - b.from;
-}
-
 function makeInterval(appropriateIntervals, formatSchedule) {
     for (var i = 0; i < formatSchedule.length; i++) {
         for (var j = 0; j < appropriateIntervals.length; j++) {
@@ -126,9 +122,11 @@ function makeInterval(appropriateIntervals, formatSchedule) {
 exports.getAppropriateMoment = function (schedule, duration, workingHours) {
     var timeZoneBank = Number(workingHours.from.substr(6));
     var formatSchedule = getFormattedSchedule(schedule);
-    var appropriateIntervals = initappropriateIntervals(workingHours);
+    var appropriateIntervals = initAppropriateIntervals(workingHours);
     appropriateIntervals = makeInterval(appropriateIntervals, formatSchedule);
-    appropriateIntervals.sort(sortOnFrom);
+    appropriateIntervals.sort(function (a, b) {
+        return a.from - b.from;
+    });
     var indGoodTime = getGoodTimeIndex(appropriateIntervals, duration);
     var isExists = false;
     var goodTime;
